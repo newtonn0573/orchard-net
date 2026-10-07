@@ -141,6 +141,30 @@ function initializeDatabase() {
         FOREIGN KEY(recipient_id) REFERENCES users(id)
       )
     `);
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS friends (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        friend_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, friend_id),
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(friend_id) REFERENCES users(id)
+      )
+    `);
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS friend_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        from_id INTEGER NOT NULL,
+        to_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(from_id, to_id),
+        FOREIGN KEY(from_id) REFERENCES users(id),
+        FOREIGN KEY(to_id) REFERENCES users(id)
+      )
+    `);
   });
 }
 
@@ -237,6 +261,119 @@ app.get('/api/users', authMiddleware, (_req, res) => {
         return sendJsonError(res, 500, 'Unable to load users.');
       }
       res.json({ users: rows });
+    }
+  );
+});
+
+app.get('/api/users/search', authMiddleware, (req, res) => {
+  const query = req.query.q || '';
+  
+  if (query.length < 1) {
+    return res.json({ users: [] });
+  }
+
+  const searchTerm = `%${query}%`;
+  db.all(
+    `SELECT id, username, email, full_name, bio, avatar, created_at FROM users 
+     WHERE username LIKE ? OR full_name LIKE ? 
+     AND id != ?
+     ORDER BY username ASC LIMIT 20`,
+    [searchTerm, searchTerm, req.user.id],
+    (err, rows) => {
+      if (err) {
+        return sendJsonError(res, 500, 'Unable to search users.');
+      }
+      res.json({ users: rows || [] });
+    }
+  );
+});
+
+app.get('/api/friends', authMiddleware, (req, res) => {
+  db.all(
+    `SELECT u.id, u.username, u.email, u.full_name, u.bio, u.avatar, u.created_at
+     FROM friends f
+     INNER JOIN users u ON u.id = f.friend_id
+     WHERE f.user_id = ?
+     ORDER BY u.username ASC`,
+    [req.user.id],
+    (err, rows) => {
+      if (err) {
+        return sendJsonError(res, 500, 'Unable to load friends.');
+      }
+      res.json({ friends: rows || [] });
+    }
+  );
+});
+
+app.post('/api/friends/add', authMiddleware, (req, res) => {
+  const { friend_id } = req.body;
+
+  if (!friend_id) {
+    return sendJsonError(res, 400, 'Friend ID is required.');
+  }
+
+  const friendId = Number(friend_id);
+  if (friendId === req.user.id) {
+    return sendJsonError(res, 400, 'You cannot add yourself as a friend.');
+  }
+
+  db.get('SELECT id FROM users WHERE id = ?', [friendId], (userErr, user) => {
+    if (userErr || !user) {
+      return sendJsonError(res, 404, 'User not found.');
+    }
+
+    db.run(
+      `INSERT OR IGNORE INTO friends (user_id, friend_id) VALUES (?, ?), (?, ?)`,
+      [req.user.id, friendId, friendId, req.user.id],
+      function onAdd(err) {
+        if (err) {
+          return sendJsonError(res, 500, 'Unable to add friend.');
+        }
+
+        db.get(
+          `SELECT u.id, u.username, u.email, u.full_name, u.bio, u.avatar, u.created_at
+           FROM friends f
+           INNER JOIN users u ON u.id = f.friend_id
+           WHERE f.user_id = ? AND f.friend_id = ?`,
+          [req.user.id, friendId],
+          (friendErr, friend) => {
+            if (friendErr || !friend) {
+              return sendJsonError(res, 500, 'Failed to add friend.');
+            }
+
+            io.to(`user:${req.user.id}`).emit('friend_added', friend);
+            io.to(`user:${friendId}`).emit('friend_added', {
+              id: req.user.id,
+              username: req.user.username
+            });
+
+            return res.status(201).json({ friend });
+          }
+        );
+      }
+    );
+  });
+});
+
+app.delete('/api/friends/:friend_id', authMiddleware, (req, res) => {
+  const friendId = Number(req.params.friend_id);
+
+  if (friendId === req.user.id) {
+    return sendJsonError(res, 400, 'Invalid friend ID.');
+  }
+
+  db.run(
+    `DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)`,
+    [req.user.id, friendId, friendId, req.user.id],
+    function onDelete(err) {
+      if (err) {
+        return sendJsonError(res, 500, 'Unable to remove friend.');
+      }
+
+      io.to(`user:${req.user.id}`).emit('friend_removed', { id: friendId });
+      io.to(`user:${friendId}`).emit('friend_removed', { id: req.user.id });
+
+      return res.json({ success: true });
     }
   );
 });
@@ -407,6 +544,10 @@ app.get('/app', pageAuthMiddleware, (_req, res) => {
   res.sendFile(path.join(publicDir, 'app.html'));
 });
 
+app.get('/messages', pageAuthMiddleware, (_req, res) => {
+  res.sendFile(path.join(publicDir, 'messages.html'));
+});
+
 app.get('/profile', pageAuthMiddleware, (_req, res) => {
   res.sendFile(path.join(publicDir, 'profile.html'));
 });
@@ -420,7 +561,7 @@ app.use((req, res) => {
     return res.status(404).json({ error: 'Endpoint not found.' });
   }
 
-  if (req.path === '/app' || req.path === '/profile') {
+  if (req.path === '/app' || req.path === '/profile' || req.path === '/messages') {
     return res.redirect('/');
   }
 
@@ -540,3 +681,4 @@ if (require.main === module) {
 }
 
 module.exports = { app, startServer, stopServer };
+
