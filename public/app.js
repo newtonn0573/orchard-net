@@ -114,7 +114,7 @@ async function handleSignup(event) {
 
     setToken(result.token);
     showAuthMessage('Account created successfully.', false);
-    window.location.href = '/app';
+    window.location.href = '/messages';
   } catch (error) {
     showAuthMessage(error.message);
   }
@@ -132,7 +132,7 @@ async function handleLogin(event) {
     });
 
     setToken(result.token);
-    window.location.href = '/app';
+    window.location.href = '/messages';
   } catch (error) {
     showAuthMessage(error.message);
   }
