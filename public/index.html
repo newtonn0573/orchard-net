@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orchard Net</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="landing-page">
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand-mark">O</div>
+        <span>Orchard Net</span>
+      </div>
+      <nav class="topnav">
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+        <button class="ghost-button" id="openLogin">Log in</button>
+      </nav>
+    </header>
+
+    <main class="hero-shell">
+      <section class="hero-copy">
+        <div class="eyebrow">Public community spaces</div>
+        <h1>Meet, share, and chat with everyone in one friendly place.</h1>
+        <p>
+          Orchard Net brings together profiles, secure messaging, photo sharing, and simple live chat in a public-first social experience.
+        </p>
+        <div class="cta-row">
+          <button id="signupHero">Create account</button>
+          <a href="/app" class="secondary-link">Open app</a>
+        </div>
+      </section>
+
+      <section class="auth-card">
+        <div class="auth-tabs">
+          <button class="tab active" data-tab="signup">Sign up</button>
+          <button class="tab" data-tab="login">Log in</button>
+        </div>
+
+        <form id="signupForm" class="auth-form">
+          <label>
+            Username
+            <input type="text" name="username" placeholder="orchard_user" required />
+          </label>
+          <label>
+            Full name
+            <input type="text" name="full_name" placeholder="Avery Bloom" required />
+          </label>
+          <label>
+            Email
+            <input type="email" name="email" placeholder="you@example.com" required />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" placeholder="At least 8 characters" required />
+          </label>
+          <button type="submit">Create account</button>
+        </form>
+
+        <form id="loginForm" class="auth-form hidden">
+          <label>
+            Username or email
+            <input type="text" name="username" placeholder="yourname" required />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" placeholder="Your password" required />
+          </label>
+          <button type="submit">Log in</button>
+        </form>
+
+        <p id="authMessage" class="auth-message"></p>
+      </section>
+    </main>
+
+    <section class="feature-grid" id="features">
+      <article class="feature-card">
+        <h3>Private account safety</h3>
+        <p>Passwords are stored securely with bcrypt hashing before they ever touch the database.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Live messaging</h3>
+        <p>Real-time updates flow instantly with Socket.IO and keep every conversation in history.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Share memories</h3>
+        <p>Upload profile photos and send image messages to friends or your broader community.</p>
+      </article>
+    </section>
+
+    <section class="about" id="about">
+      <div>
+        <h2>Built for community, conversation, and connection.</h2>
+        <p>Orchard Net is designed as a public social app with protected user experiences, profile customization, and real-time communication.</p>
+      </div>
+    </section>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

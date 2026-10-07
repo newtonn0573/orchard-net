@@ -1,0 +1,5 @@
+node_modules/
+.env
+orchard-net.db
+uploads/
+.DS_Store

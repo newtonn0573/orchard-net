@@ -1,7 +1,7 @@
 {
   "name": "orchard-net",
   "version": "1.0.0",
-  "description": "A messaging app for texting and sending photos",
+  "description": "A messaging website for texting",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,7 +10,7 @@
   "dependencies": {
     "express": "^4.19.2",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.1.2",
+    "jsonwebtoken": "^9.0.3",
     "multer": "^1.4.5-lts.1",
     "socket.io": "^4.8.1",
     "sqlite3": "^5.1.7",

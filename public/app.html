@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orchard Net Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="dashboard-page">
+    <header class="dashboard-header">
+      <div class="brand-wrap">
+        <div class="brand-mark">O</div>
+        <span>Orchard Net</span>
+      </div>
+      <div class="header-actions">
+        <a href="/profile" class="ghost-button">Profile</a>
+        <button id="logoutButton" class="secondary-button">Log out</button>
+      </div>
+    </header>
+
+    <main class="dashboard-layout">
+      <aside class="sidebar panel">
+        <div class="panel-header">
+          <h3>Community</h3>
+        </div>
+        <div id="userList" class="user-list"></div>
+      </aside>
+
+      <section class="chat-panel panel">
+        <div class="panel-header chat-header">
+          <div>
+            <div class="muted-label">Live chat</div>
+            <h3 id="activeChatTitle">Global chat</h3>
+          </div>
+        </div>
+
+        <div id="messages" class="messages"></div>
+
+        <form id="messageForm" class="message-form">
+          <input id="messageInput" type="text" placeholder="Share a message..." maxlength="500" />
+          <label class="upload-button">
+            <input id="messageImageInput" type="file" accept="image/*" />
+            Photo
+          </label>
+          <button type="submit">Send</button>
+        </form>
+      </section>
+
+      <aside class="profile-panel panel">
+        <div class="panel-header">
+          <h3>Your profile</h3>
+        </div>
+        <div id="profileSummary" class="profile-summary"></div>
+        <form id="profileForm" class="profile-form">
+          <label>
+            Full name
+            <input type="text" name="full_name" placeholder="Your full name" />
+          </label>
+          <label>
+            Bio
+            <textarea name="bio" rows="3" placeholder="Tell people about yourself..."></textarea>
+          </label>
+          <label>
+            Profile photo
+            <input type="file" id="profilePhotoInput" accept="image/*" />
+          </label>
+          <button type="submit">Save profile</button>
+        </form>
+      </aside>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
